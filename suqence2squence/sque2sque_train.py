@@ -4,6 +4,7 @@ Created on Sat Aug 14 14:03:26 2021
 
 @author: fanxu
 """
+import time
 import numpy as np
 import pandas as pd
 import torch
@@ -22,19 +23,18 @@ def train(model, dataLoader, optimizer, criterion):
         pred = model(x, y)
         
         pred_dim = pred.shape[-1]
-        
-        trg = trg[1:].view(-1)
-        pred = pred[1:].view(-1, pred_dim)
-        loss = criterion(pred, trg)
+        ty = ty.view(-1)
+        pred = pred.view(-1, pred_dim)
+        loss = criterion(pred, ty)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         epoch_loss += loss.item()
-    return epoch_loss / len(iterator)
+    return epoch_loss / (len(dataLoader)*dataLoader.batch_size)
 
 def read_file(filename):
     
-    data = pd.read_excel(filename)
+    data = pd.read_csv(filename)
     data = data.set_index('日期')
     return data.astype(np.float32)
     
@@ -75,21 +75,24 @@ def save_torch(model, filename):
 if __name__ == "__main__":
     
     
-    filename = './power.xlsx'
+    filename = './power.csv'
     dat = read_file(filename)
     data = dat
     arr = data.iloc[:-1,:].values.flatten()
     inpArr, outArr = in_out_creat(arr, windowSize=48, preStep=16)
     trainLoader = dataLoader_creat(inpArr, outArr)
-    import pdb;pdb.set_trace()
     inpDim = 1
     outDim = 1
     endHidDim = 5
     decHidDim = 5
     model = model_define(inpDim, outDim, endHidDim, decHidDim)
-    optimizer = optim.Adam(model.parameters(), lr=0.05)
+    optimizer = optim.Adam(model.parameters(), lr=0.1)
     lossfunction = nn.MSELoss()
-    train(model, trainLoader, optimizer, lossfunction)
+    for epoch in range(10):
+        start_time = time.time()
+    
+        train_loss = train(model, trainLoader, optimizer, lossfunction)
+        print('echo {}, train_loss {}'.format(epoch, train_loss))
     filename = './model_torch.mdl'
     save_torch(model, filename)
     

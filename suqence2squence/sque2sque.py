@@ -4,7 +4,8 @@ Created on Sat Aug 14 12:02:15 2021
 
 @author: fanxu
 """
-import torch 
+import torch
+import numpy,random as random 
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -58,7 +59,6 @@ class Attention(nn.Module):
         
         batSiz = encOut.shape[0]
         squLen = encOut.shape[1]
-        
         encSta = encSta.unsqueeze(1).repeat(1, squLen, 1)
         ### tensor.unsqueeze 取消掉encSta的第二个维度 ###
         ### tensor.repeat 在第二维度上将encSta重复squLen次 ###
@@ -90,6 +90,7 @@ class Decoder(nn.Module):
             return：
                 att: [batch_size, sque_len]   
         """
+        import pdb;pdb.set_trace()
         decInp = decInp.unsqueeze(1)
         # encOut = [batch_size, src_len, enc_hid_dim * 2]
         encOut = encOut.transpose(0, 1)
@@ -100,7 +101,6 @@ class Decoder(nn.Module):
         cm = torch.bmm(att, encOut)
         ### toech.bmm 为tensor的对应相乘 ###
         ### 利用attention对输入的每一个样本赋予权重 ###
-
         rnnInp = torch.cat((decInp, cm), dim = 2).transpose(0,1)
         decOut, decHid = self.rnn(rnnInp,encSta.unsqueeze(0))
         decOut = decOut.squeeze(0)
@@ -131,11 +131,11 @@ class sque2sque(nn.Module):
             # receive output tensor (predictions) and new hidden state
             decOut, decSta = self.decoder(dec_input, encOut, encSta)
             outputs[:,t] = decOut
-            teacher_force = random.random() < teacher_forcing_ratio
+            #teacher_force = random.random() < teacher_forcing_ratio
             
-            top1 = dec_output.argmax(1)
+            #top1 = dec_output.argmax(1)
             
-            dec_input = outputs[t-1] if teacher_force else top1
+            dec_input = outputs[:,t-1,:] #if teacher_force else top1
         
         return outputs
 
