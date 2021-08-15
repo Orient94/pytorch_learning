@@ -48,7 +48,7 @@ def model_train(model, inpArr, outArr):
 
 if __name__ == '__main__':
     
-    filename = './power.xlsx'
+    filename = './data.xlsx'
     dat = read_file(filename)
     data = dat
     arr = data.iloc[:-1,:].values.flatten()

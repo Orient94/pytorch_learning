@@ -75,7 +75,7 @@ def save_torch(model, filename):
 if __name__ == "__main__":
     
     
-    filename = './power.csv'
+    filename = './data.csv'
     dat = read_file(filename)
     data = dat
     arr = data.iloc[:-1,:].values.flatten()
